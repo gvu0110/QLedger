@@ -1,6 +1,11 @@
 [![CircleCI](https://circleci.com/gh/RealImage/QLedger.svg?style=svg)](https://circleci.com/gh/RealImage/QLedger)
 
 # QLedger
+
+Local run
+```shell
+docker-compose --env-file docker-compose.env .
+```
 Systems that manage money do so by managing its movement - by tracking where it moved from, where it moved to, how much moved and why. QLedger is a service that provides APIs to manage the structured movement of money.
 
 The there are two primitives in the system: **accounts** and **transactions**. Money moves between accounts by means of a transaction.

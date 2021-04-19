@@ -1,0 +1,48 @@
+version: "3"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    ports:
+      - "7000:7000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db/qledgerdb?sslmode=disable
+      TEST_DATABASE_URL: postgres://postgres:postgres@db_test:5431/qledgerdb_test?sslmode=disable
+      MIGRATION_FILES_PATH: file:///go/src/github.com/RealImage/QLedger/migrations/postgres
+      LEDGER_AUTH_TOKEN: ${LEDGER_AUTH_TOKEN}
+    depends_on:
+      - db
+      - db_test
+    networks:
+      - backend
+
+  db:
+    image: postgres:latest
+    container_name: db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=qledgerdb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - backend
+
+  db_test:
+    image: postgres:latest
+    container_name: db_test
+    ports:
+      - "5431:5432"
+    environment:
+      - POSTGRES_DB=qledgerdb_test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - backend
+  
+networks:
+  backend: 
