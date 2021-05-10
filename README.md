@@ -6,6 +6,58 @@ Local run
 ```shell
 docker-compose --env-file docker-compose.env .
 ```
+Infrastructure run
+```shell
+cd infrastructure
+terraform init
+
+# Create VPC and subnets
+terraform apply --target=module.networking
+
+# Create security groups
+terraform apply --target=module.security-groups
+
+# Create bastion host
+terraform apply --target=module.compute
+
+# Create IAM
+terraform apply --target=module.iam
+
+# Create RDS
+terraform apply --target=module.rds
+
+# Get RDS endpoint
+ENDPOINT=$(terraform output -raw endpoint)
+
+# Create test database in the same RDS instance from the bastion
+DB_USERNAME="root"
+DB_PASSWORD="root1234"
+DB_NAME="qledgerdb"
+TEST_DB_NAME="qledgertestdb"
+psql --host=${ENDPOINT} --dbname=${DB_NAME} \
+--username=${DB_USERNAME} --password \
+--command="CREATE DATABASE ${TEST_DB_NAME};"
+
+TEST_DB_URL="postgres://${DB_USERNAME}:${DB_PASSWORD}@${ENDPOINT}/${TEST_DB_NAME}?sslmode=disable"
+psql ${TEST_DB_URL} < schema.sql
+
+# Create ECR repository
+terraform apply --target=module.ecs.aws_ecr_repository.ecr_repository
+
+# Create image tag
+REGISTRY=$(terraform output -raw repository_url)
+IMAGETAG=$(git rev-parse HEAD | cut -c 1-8)
+IMAGE="${REGISTRY}:${IMAGETAG}"
+
+# Build image
+docker build -t ${IMAGE} .
+
+# Push image to ECR repository
+aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 157117204602.dkr.ecr.ca-central-1.amazonaws.com
+docker push ${IMAGE}
+
+# TODO: Run ECS
+```
 Systems that manage money do so by managing its movement - by tracking where it moved from, where it moved to, how much moved and why. QLedger is a service that provides APIs to manage the structured movement of money.
 
 The there are two primitives in the system: **accounts** and **transactions**. Money moves between accounts by means of a transaction.

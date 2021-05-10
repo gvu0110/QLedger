@@ -34,3 +34,11 @@ bin/
 QLedger
 .rvmrc
 dump.rdb
+
+#  Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+**/.terraform.lock.hcl

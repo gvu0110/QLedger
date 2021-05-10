@@ -9,7 +9,7 @@ services:
       - "7000:7000"
     environment:
       DATABASE_URL: postgres://postgres:postgres@db/qledgerdb?sslmode=disable
-      TEST_DATABASE_URL: postgres://postgres:postgres@db_test:5431/qledgerdb_test?sslmode=disable
+      TEST_DATABASE_URL: postgres://postgres:postgres@testdb:5431/qledgertestdb?sslmode=disable
       MIGRATION_FILES_PATH: file:///go/src/github.com/RealImage/QLedger/migrations/postgres
       LEDGER_AUTH_TOKEN: ${LEDGER_AUTH_TOKEN}
     depends_on:
@@ -30,13 +30,13 @@ services:
     networks:
       - backend
 
-  db_test:
+  testdb:
     image: postgres:latest
-    container_name: db_test
+    container_name: testdb
     ports:
       - "5431:5432"
     environment:
-      - POSTGRES_DB=qledgerdb_test
+      - POSTGRES_DB=qledgertestdb
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
